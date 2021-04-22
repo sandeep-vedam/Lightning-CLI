@@ -26,11 +26,15 @@ const isLocallyInstalled = require('../helpers/localinstallationcheck')
 
 module.exports = () => {
   const sslPath = path.join(__dirname, '../../ssl/')
+
+  //Combine arrays
+  const flattenedArray = arr => [].concat(...arr)
+
   const args = [
     './build',
-    process.env.LNG_SERVE_HTTPS === 'false'
-      ? false
-      : ['-S', '-C', `${sslPath}cert.pem`, '-K', `${sslPath}key.pem`],
+    process.env.LNG_SERVE_HTTPS === 'true'
+      ? ['-S', '-C', `${sslPath}cert.pem`, '-K', `${sslPath}key.pem`]
+      : false,
     process.env.LNG_SERVE_OPEN === 'false' ? false : '-o',
     process.env.LNG_SERVE_CACHE_TIME ? '-c' + process.env.LNG_SERVE_CACHE_TIME : '-c-1',
     process.env.LNG_SERVE_PORT ? '-p' + process.env.LNG_SERVE_PORT : false,
@@ -40,7 +44,7 @@ module.exports = () => {
   const levelsDown = isLocallyInstalled() ? '../../../../..' : '../..'
   const subprocess = execa(
     path.join(__dirname, levelsDown, 'node_modules/.bin/http-server'),
-    args.flat()
+    flattenedArray(args)
   )
 
   subprocess.catch(e => console.log(chalk.red(e.stderr)))

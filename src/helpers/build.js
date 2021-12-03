@@ -25,6 +25,8 @@ const chalk = require('chalk')
 const concat = require('concat')
 const os = require('os')
 const esbuild = require('esbuild')
+const FontCoreEditor = require('fonteditor-core')
+
 const spinner = require('./spinner')
 const isLocallyInstalled = require('./localinstallationcheck')
 const exit = require('./exit')
@@ -374,6 +376,37 @@ const getSettingsFileName = () => {
   return settingsFileName
 }
 
+const optimizeFonts = (fontType, fontPath, fontDestPath) => {
+  //Supports only ttf files, so converting only ttf files
+  if (path.extname(fontPath) === '.ttf') {
+    const inBuffer = fs.readFileSync(fontPath)
+    const font = FontCoreEditor.Font.create(inBuffer, {
+      type: fontType,
+    })
+    const outBuffer = font.write({
+      type: fontType,
+    })
+    fs.writeFileSync(fontDestPath, outBuffer)
+  }
+}
+const fontOptimizer = targetDir => {
+  const fontDir = path.join(targetDir, 'static/fonts')
+  findFontFiles(fontDir)
+}
+
+const findFontFiles = fontDir => {
+  const files = fs.readdirSync(fontDir)
+  files.forEach(file => {
+    const absPath = path.join(fontDir, file)
+    if (!fs.lstatSync(absPath).isDirectory()) {
+      //Supports only ttf files
+      optimizeFonts('ttf', absPath, absPath)
+    } else {
+      findFontFiles(absPath)
+    }
+  })
+}
+
 module.exports = {
   removeFolder,
   ensureFolderExists,
@@ -397,4 +430,6 @@ module.exports = {
   hasNewSDK,
   ensureLightningApp,
   getSettingsFileName,
+  optimizeFonts,
+  fontOptimizer,
 }

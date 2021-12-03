@@ -36,6 +36,7 @@ module.exports = (clear = false, change = null) => {
     () => buildHelpers.ensureFolderExists(targetDir),
     () => clear && buildHelpers.copySupportFiles(targetDir),
     () => (clear || change === 'static') && buildHelpers.copyStaticFolder(targetDir),
+    () => buildHelpers.fontOptimizer(targetDir),
     () =>
       (clear || change === 'settings') && buildHelpers.copySettings(settingsFileName, targetDir),
     () => (clear || change === 'metadata') && buildHelpers.copyMetadata(targetDir),
